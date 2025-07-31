@@ -94,7 +94,9 @@ class Brain:
             if track:
                 cv2.putText(img, 'id: {}'.format(pose.id), (pose.bbox[0], pose.bbox[1] - 16),
                             cv2.FONT_HERSHEY_COMPLEX, 0.5, (0, 0, 255))
-        cv2.imshow('Lightweight Human Pose Estimation Python Demo', img)
+        cv2.namedWindow('AEye', cv2.WINDOW_NORMAL)
+        cv2.resizeWindow('AEye', 960, 540)
+        cv2.imshow('AEye', img)
         key = cv2.waitKey(delay)
         if key == 27:  # esc
             return
