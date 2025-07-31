@@ -23,8 +23,6 @@ class Brain:
             self.checkpoint = torch.load("weights\checkpoint_iter_370000.pth", map_location=torch.device('cpu'))
         load_state(self.net, self.checkpoint)
         self.net.eval()
-        self.fourcc = cv2.VideoWriter_fourcc(*"mp4v")
-        self.out = cv2.VideoWriter("recorded_processed.mp4", self.fourcc, 20.0, (960, 540))
         
         
     def infer_fast(self, img, net_input_height_size, stride, upsample_ratio, cpu,
@@ -57,10 +55,6 @@ class Brain:
 
     
     def think(self, img, height_size=256, track=1, smooth=1):
-        # self.net.eval()
-        # if not cpu:
-        #     self.net = self.net.cuda()
-        # print(next(self.net.parameters()).device)
         stride = 8
         upsample_ratio = 4
         num_keypoints = Pose.num_kpts
@@ -69,7 +63,6 @@ class Brain:
         
         orig_img = img.copy()
         heatmaps, pafs, scale, pad = self.infer_fast(img, height_size, stride, upsample_ratio, self.cpu)
-        # heatmaps, pafs, scale, pad = self.infer_fast(net=self.net, img=img, net_input_height_size=height_size, stride=stride, upsample_ratio=upsample_ratio, cpu=cpu)
 
         total_keypoints_num = 0
         all_keypoints_by_type = []
@@ -111,10 +104,9 @@ class Brain:
             
         cv2.namedWindow('AEye', cv2.WINDOW_NORMAL)
         cv2.resizeWindow('AEye', 960, 540)
-        # cv2.resizeWindow('AEye', 512, 512)
         cv2.imshow('AEye', img)
-        self.out.write(img)
         key = cv2.waitKey(delay)
+        
         if key == 27:  # esc
             return
         elif key == 112:  # 'p'
@@ -122,3 +114,5 @@ class Brain:
                 delay = 0
             else:
                 delay = 1
+        
+        return img

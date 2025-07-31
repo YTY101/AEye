@@ -54,33 +54,23 @@ class Eye:
         # # 设置录屏区域
         self.monitor = {"top": self.top, "left": self.left, "width": self.width, "height": self.height}
 
-
-        # 初始化视频编码器
-        self.fourcc = cv2.VideoWriter_fourcc(*"mp4v")
-        self.out = cv2.VideoWriter("recorded_original.mp4", self.fourcc, 20.0, (self.monitor["width"], self.monitor["height"]))
-        
+        print("start_looking")
         with mss.mss() as sct:
             print("开始录屏，按 Ctrl+C 停止...")
             try:
                 while True:
                     frame = np.array(sct.grab(self.monitor))
                     frame = cv2.cvtColor(frame, cv2.COLOR_BGRA2BGR)
-                    self.out.write(frame)
+                    # self.out.write(frame)
 
                     # 显示预览（可选）
                     cv2.namedWindow("Screen", cv2.WINDOW_NORMAL)
                     cv2.resizeWindow("Screen", 960, 540)
-                    # cv2.resizeWindow("Screen", 512, 512)
 
                     cv2.imshow("Screen", frame)
                     if cv2.waitKey(1) == 27:  # ESC 键退出预览
                         break
-                    # yield frame
-                    # frame_small = cv2.resize(frame, (560, 315), interpolation=cv2.INTER_AREA)
-                    # frame_small = cv2.resize(frame, (640, 360), interpolation=cv2.INTER_AREA)
-                    frame_small = cv2.resize(frame, (720, 405), interpolation=cv2.INTER_AREA)
-                    
-                    yield frame_small
+                    yield frame
             except KeyboardInterrupt:
                 print("录制结束。")
 
