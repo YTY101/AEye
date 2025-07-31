@@ -23,6 +23,8 @@ class Brain:
             self.checkpoint = torch.load("weights\checkpoint_iter_370000.pth", map_location=torch.device('cpu'))
         load_state(self.net, self.checkpoint)
         self.net.eval()
+        self.fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+        self.out = cv2.VideoWriter("recorded_processed.mp4", self.fourcc, 20.0, (960, 540))
         
         
     def infer_fast(self, img, net_input_height_size, stride, upsample_ratio, cpu,
@@ -58,7 +60,7 @@ class Brain:
         # self.net.eval()
         # if not cpu:
         #     self.net = self.net.cuda()
-        
+        # print(next(self.net.parameters()).device)
         stride = 8
         upsample_ratio = 4
         num_keypoints = Pose.num_kpts
@@ -106,10 +108,12 @@ class Brain:
                 cv2.putText(img, 'Confidence: {:.2f}'.format(pose.confidence), (pose.bbox[0], pose.bbox[1] - 32),
                             cv2.FONT_HERSHEY_COMPLEX, 0.5, (0, 0, 255))
                 # print('id: {}, Confidence: {:.2f}'.format(pose.id, pose.confidence))
+            
         cv2.namedWindow('AEye', cv2.WINDOW_NORMAL)
         cv2.resizeWindow('AEye', 960, 540)
         # cv2.resizeWindow('AEye', 512, 512)
         cv2.imshow('AEye', img)
+        self.out.write(img)
         key = cv2.waitKey(delay)
         if key == 27:  # esc
             return
