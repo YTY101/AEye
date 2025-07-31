@@ -15,6 +15,6 @@ class Body:
         
     def run(self):
         self.hand.work()
-        for frame in self.eye.start_looking():
-            self.brain.think(frame)
-            
+        for i, frame in enumerate(self.eye.start_looking()):
+            if i % 1 == 0:
+                self.brain.think(frame)

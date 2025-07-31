@@ -40,7 +40,8 @@ class Brain:
         if not cpu:
             tensor_img = tensor_img.cuda()
 
-        stages_output = net(tensor_img)
+        with torch.no_grad():
+            stages_output = net(tensor_img)
 
         stage2_heatmaps = stages_output[-2]
         heatmaps = np.transpose(stage2_heatmaps.squeeze().cpu().data.numpy(), (1, 2, 0))
@@ -101,6 +102,10 @@ class Brain:
             if track:
                 cv2.putText(img, 'id: {}'.format(pose.id), (pose.bbox[0], pose.bbox[1] - 16),
                             cv2.FONT_HERSHEY_COMPLEX, 0.5, (0, 0, 255))
+                # 显示pose.confidence
+                cv2.putText(img, 'Confidence: {:.2f}'.format(pose.confidence), (pose.bbox[0], pose.bbox[1] - 32),
+                            cv2.FONT_HERSHEY_COMPLEX, 0.5, (0, 0, 255))
+                # print('id: {}, Confidence: {:.2f}'.format(pose.id, pose.confidence))
         cv2.namedWindow('AEye', cv2.WINDOW_NORMAL)
         cv2.resizeWindow('AEye', 960, 540)
         # cv2.resizeWindow('AEye', 512, 512)

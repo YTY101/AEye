@@ -63,8 +63,9 @@ class Eye:
                     cv2.imshow("Screen", frame)
                     if cv2.waitKey(1) == 27:  # ESC 键退出预览
                         break
-                    frame_small = cv2.resize(frame, (0, 0), fx=0.5, fy=0.5)
-                    yield frame_small
+                    yield frame
+                    # frame_small = cv2.resize(frame, (0, 0), fx=0.5, fy=0.5)
+                    # yield frame_small
             except KeyboardInterrupt:
                 print("录制结束。")
 
