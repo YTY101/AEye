@@ -15,6 +15,18 @@ class Eye:
             self.top = 0
             self.width = 1920
             self.height = 1080
+            
+            # # 960x540
+            # self.left = 480
+            # self.top = 270
+            # self.width = 960
+            # self.height = 540
+            
+            # # 1024x1024
+            # self.left =448
+            # self.top = 28
+            # self.width = 1024
+            # self.height = 1024
             print(f"Recoding: Fullscreen AREA: ({self.left}, {self.top}, {self.width}, {self.height})")
         else:
             self.window = gw.getWindowsWithTitle(self.window_title)
@@ -46,10 +58,13 @@ class Eye:
                     # 显示预览（可选）
                     cv2.namedWindow("Screen", cv2.WINDOW_NORMAL)
                     cv2.resizeWindow("Screen", 960, 540)
+                    # cv2.resizeWindow("Screen", 512, 512)
+
                     cv2.imshow("Screen", frame)
                     if cv2.waitKey(1) == 27:  # ESC 键退出预览
                         break
-                    yield frame
+                    frame_small = cv2.resize(frame, (0, 0), fx=0.5, fy=0.5)
+                    yield frame_small
             except KeyboardInterrupt:
                 print("录制结束。")
 

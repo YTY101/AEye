@@ -10,11 +10,11 @@ class Body:
         self.window_title = window_title
         self.eye = Eye(window_title)
         self.hand = Hand()
-        self.brain = Brain()
+        self.brain = Brain(cpu=False)
         self.buffer = []
         
     def run(self):
         self.hand.work()
         for frame in self.eye.start_looking():
-            self.brain.think(frame, cpu=False)
+            self.brain.think(frame)
             

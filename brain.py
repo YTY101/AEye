@@ -12,10 +12,17 @@ from val import normalize, pad_width
 
 
 class Brain:
-    def __init__(self):
+    def __init__(self, cpu=True):
         self.net = PoseEstimationWithMobileNet()
-        self.checkpoint = torch.load("weights\checkpoint_iter_370000.pth", map_location=torch.device('cpu'))
+        self.cpu = cpu
+        if not cpu: 
+            self.net = self.net.cuda()
+            self.checkpoint = torch.load("weights\checkpoint_iter_370000.pth")
+        else:
+            self.net = self.net.cpu()
+            self.checkpoint = torch.load("weights\checkpoint_iter_370000.pth", map_location=torch.device('cpu'))
         load_state(self.net, self.checkpoint)
+        self.net.eval()
         
         
     def infer_fast(self, img, net_input_height_size, stride, upsample_ratio, cpu,
@@ -46,10 +53,10 @@ class Brain:
         return heatmaps, pafs, scale, pad
 
     
-    def think(self, img, height_size=256, cpu=True, track=1, smooth=1):
-        self.net.eval()
-        if not cpu:
-            self.net = self.net.cuda()
+    def think(self, img, height_size=256, track=1, smooth=1):
+        # self.net.eval()
+        # if not cpu:
+        #     self.net = self.net.cuda()
         
         stride = 8
         upsample_ratio = 4
@@ -58,7 +65,7 @@ class Brain:
         delay = 1
         
         orig_img = img.copy()
-        heatmaps, pafs, scale, pad = self.infer_fast(img, height_size, stride, upsample_ratio, cpu)
+        heatmaps, pafs, scale, pad = self.infer_fast(img, height_size, stride, upsample_ratio, self.cpu)
         # heatmaps, pafs, scale, pad = self.infer_fast(net=self.net, img=img, net_input_height_size=height_size, stride=stride, upsample_ratio=upsample_ratio, cpu=cpu)
 
         total_keypoints_num = 0
@@ -96,6 +103,7 @@ class Brain:
                             cv2.FONT_HERSHEY_COMPLEX, 0.5, (0, 0, 255))
         cv2.namedWindow('AEye', cv2.WINDOW_NORMAL)
         cv2.resizeWindow('AEye', 960, 540)
+        # cv2.resizeWindow('AEye', 512, 512)
         cv2.imshow('AEye', img)
         key = cv2.waitKey(delay)
         if key == 27:  # esc
