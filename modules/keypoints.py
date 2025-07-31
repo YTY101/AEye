@@ -9,7 +9,9 @@ BODY_PARTS_PAF_IDS = ([12, 13], [20, 21], [14, 15], [16, 17], [22, 23], [24, 25]
 
 
 def extract_keypoints(heatmap, all_keypoints, total_keypoint_num):
-    heatmap[heatmap < 0.1] = 0
+    # heatmap[heatmap < 0.1] = 0
+    heatmap[heatmap < 0.05] = 0
+
     heatmap_with_borders = np.pad(heatmap, [(2, 2), (2, 2)], mode='constant')
     heatmap_center = heatmap_with_borders[1:heatmap_with_borders.shape[0]-1, 1:heatmap_with_borders.shape[1]-1]
     heatmap_left = heatmap_with_borders[1:heatmap_with_borders.shape[0]-1, 2:heatmap_with_borders.shape[1]]
