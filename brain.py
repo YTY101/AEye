@@ -101,7 +101,7 @@ class Brain:
         for pose in current_poses:
             if pose.keypoints[0][0] != -1:            
                 # print("pose keypoints(nose): ", pose.keypoints[0])
-                target_points.append(pose.keypoints[0])
+                target_points.append(pose.keypoints[1])
             cv2.rectangle(img, (pose.bbox[0], pose.bbox[1]),
                           (pose.bbox[0] + pose.bbox[2], pose.bbox[1] + pose.bbox[3]), (0, 255, 0))
             if track:

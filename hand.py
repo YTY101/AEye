@@ -46,7 +46,7 @@ class Hand:
         self.x = -1
         self.y = -1
         # self.listener = Listener(on_click=self.on_click)
-        self.listener = KeyboardListener(on_press=self.on_press)
+        self.listener = KeyboardListener(on_press=self.on_press_fps)
         self.mouse = Controller()
         self.port = 'COM8'
         self.baudrate = 115200
@@ -105,17 +105,36 @@ class Hand:
     def on_press(self, key):
         # x, y = self.get_mouse_position()
         if key == KeyCode.from_char('`'):
-            # self.set_target(956, 442)
             target_x, target_y = (self.x, self.y)
             if (self.x != -1 and self.y != -1):
                 current_x, current_y = self.get_mouse_position()
                 print(f"Trigger: Moving mouse from ({current_x}, {current_y}) to ({target_x}, {target_y})")
                 
                 while(abs(target_x - current_x) > 10 or abs(target_y - current_y) > 10):
+                    target_x, target_y = (self.x, self.y)
                     dx, dy = self.pid.compute((current_x, current_y), (target_x, target_y))
                     self.send_command(dx, dy)
                     current_x, current_y = self.get_mouse_position()
                     print(f"PID Track: {current_x}, {current_y}")
+                    time.sleep(0.01)  # 给 MCU
+            else:
+                print(f"Trigger: No target detected")
+
+    def on_press_fps(self, key):
+        if key == KeyCode.from_char('`'):
+            target_x, target_y = 1920 / 2, 1080 / 2
+            if (self.x != -1 and self.y != -1):
+                current_x, current_y = (self.x, self.y)
+                print(f"Trigger: Moving mouse from ({current_x}, {current_y}) to ({target_x}, {target_y})")
+                
+                while(abs(target_x - current_x) > 10 or abs(target_y - current_y) > 10):
+                    dx, dy = self.pid.compute((current_x, current_y), (target_x, target_y))
+                    self.send_command(-dx, -dy)
+                    current_x, current_y = (self.x, self.y)
+                    print(f"PID Track: {current_x}, {current_y}")
+                    if current_x == -1 or current_y == -1:
+                        print(f"Trigger: Target lost")
+                        break
                     time.sleep(0.01)  # 给 MCU
             else:
                 print(f"Trigger: No target detected")
@@ -130,7 +149,9 @@ class Hand:
             
 if __name__ == '__main__':
     hand = Hand()
+    hand.set_target(1920 / 2, 1080 / 2)
     hand.work()
+    
     while True:
         pass
             
