@@ -17,7 +17,6 @@ class PIDController:
         self.integral_y = 0
         self.prev_error_x = 0
         self.prev_error_y = 0
-        self.pid = PIDController(0.5, 0.01, 0.1)
 
     def compute(self, current, target):
         error_x = target[0] - current[0]
@@ -52,10 +51,18 @@ class Hand:
         self.port = 'COM8'
         self.baudrate = 115200
         self.ser = serial.Serial(self.port, self.baudrate)
-
+        self.pid = PIDController(0.3, 0, 0)
+    
     def work(self):
-        
         self.listener.start()
+
+    def get_mouse_position(self):
+        x, y = self.mouse.position
+        return x, y
+    
+    def send_command(self, dx, dy):
+        command = f"{dx},{dy}\n"
+        self.ser.write(command.encode())
     
     def split_movement(self, dx, dy):
         step = 64
@@ -93,26 +100,26 @@ class Hand:
                 command = f"{dx},{dy}\n"
                 self.ser.write(command.encode())
             else:
-                print(f"Trigger: No target detected)")
+                print(f"Trigger: No target detected")
     
     def on_press(self, key):
-        x, y = self.mouse.position
+        # x, y = self.get_mouse_position()
         if key == KeyCode.from_char('`'):
-            # if self.x != -1 and self.y != -1:
-            if True:
-                self.set_target(960, 540)
-                dx, dy = self.x - x, self.y - y
-                print(f"Trigger: Moving mouse from ({x}, {y}) to ({self.x}, {self.y})")
-                # command = f"{dx},{dy}\n"
-                # self.ser.write(command.encode())
-                for step_dx, step_dy in self.split_movement(dx, dy):
-                    command = f"{step_dx},{step_dy}\n"
-                    self.ser.write(command.encode())
-                    print(f"Trigger: Moving mouse step by ({step_dx}, {step_dy})")
-                    time.sleep(0.01)  # 给 MCU 
+            # self.set_target(956, 442)
+            target_x, target_y = (self.x, self.y)
+            if (self.x != -1 and self.y != -1):
+                current_x, current_y = self.get_mouse_position()
+                print(f"Trigger: Moving mouse from ({current_x}, {current_y}) to ({target_x}, {target_y})")
+                
+                while(abs(target_x - current_x) > 10 or abs(target_y - current_y) > 10):
+                    dx, dy = self.pid.compute((current_x, current_y), (target_x, target_y))
+                    self.send_command(dx, dy)
+                    current_x, current_y = self.get_mouse_position()
+                    print(f"PID Track: {current_x}, {current_y}")
+                    time.sleep(0.01)  # 给 MCU
             else:
-                print(f"Trigger: No target detected)")
-    
+                print(f"Trigger: No target detected")
+
     def on_release(self, key):
         if key == Key.ctrl_l:
             print(f"Trigger: Stop moving mouse")
