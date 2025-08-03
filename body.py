@@ -19,9 +19,15 @@ class Body:
         
     def run(self):
         self.hand.work()
+        target_points = []
         for i, frame in enumerate(self.eye.start_looking()):
-            processed_frame = self.brain.think(frame)
-            print(f"Frame {i} processed {frame.shape}")
+            processed_frame, target_points = self.brain.think(frame, track=1, smooth=1)
+            # print(f"Frame {i} processed {frame.shape}")
+            # print("target points: ", target_points)
+            if len(target_points) > 0:
+                self.hand.set_target(target_points[0][0], target_points[0][1])
+            else:
+                self.hand.set_target(-1, -1)
             self.original_out.write(frame)
             self.processed_out.write(processed_frame)
             

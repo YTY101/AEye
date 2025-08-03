@@ -53,6 +53,11 @@ class Brain:
 
         return heatmaps, pafs, scale, pad
 
+    def align_target_points(self, target_points):
+        for i in range(len(target_points)):
+            target_points[i][0] += 600
+            target_points[i][1] += 338
+        return target_points
     
     def think(self, img, height_size=256, track=1, smooth=1):
         stride = 8
@@ -91,7 +96,12 @@ class Brain:
         for pose in current_poses:
             pose.draw(img)
         img = cv2.addWeighted(orig_img, 0.6, img, 0.4, 0)
+        
+        target_points = []
         for pose in current_poses:
+            if pose.keypoints[0][0] != -1:            
+                # print("pose keypoints(nose): ", pose.keypoints[0])
+                target_points.append(pose.keypoints[0])
             cv2.rectangle(img, (pose.bbox[0], pose.bbox[1]),
                           (pose.bbox[0] + pose.bbox[2], pose.bbox[1] + pose.bbox[3]), (0, 255, 0))
             if track:
@@ -115,4 +125,4 @@ class Brain:
             else:
                 delay = 1
         
-        return img
+        return img, self.align_target_points(target_points)
