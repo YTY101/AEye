@@ -10,11 +10,11 @@ class Eye:
 
         self.window_title = window_title
         if (window_title == "auto"): 
-            # # 设置全屏
-            # self.left = 0
-            # self.top = 0
-            # self.width = 1920
-            # self.height = 1080
+            # 设置全屏
+            self.left = 0
+            self.top = 0
+            self.width = 1920
+            self.height = 1080
             
             # # 480x640
             # self.left = 0
@@ -22,11 +22,11 @@ class Eye:
             # self.width = 480
             # self.height = 640
             
-            # 720x405
-            self.left = 600
-            self.top = 338
-            self.width = 720
-            self.height = 405
+            # # 720x405
+            # self.left = 600
+            # self.top = 338
+            # self.width = 720
+            # self.height = 405
             
             # # 960x540
             # self.left = 480
@@ -70,7 +70,10 @@ class Eye:
                     cv2.imshow("Screen", frame)
                     if cv2.waitKey(1) == 27:  # ESC 键退出预览
                         break
+                    
+                    frame = cv2.resize(frame, (720, 405))
                     yield frame
+
             except KeyboardInterrupt:
                 print("录制结束。")
 
