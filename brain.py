@@ -55,8 +55,8 @@ class Brain:
 
     def align_target_points(self, target_points):
         for i in range(len(target_points)):
-            target_points[i][0] += 600
-            target_points[i][1] += 338
+            target_points[i][0] += 720
+            target_points[i][1] += 300
         return target_points
     
     def think(self, img, height_size=256, track=1, smooth=1):
@@ -99,9 +99,14 @@ class Brain:
         
         target_points = []
         for pose in current_poses:
-            if pose.keypoints[0][0] != -1:            
-                # print("pose keypoints(nose): ", pose.keypoints[0])
-                target_points.append(pose.keypoints[1])
+            if pose.confidence > 5:
+                if pose.keypoints[0][0] != -1:            
+                    target_points.append(pose.keypoints[0])
+                if pose.keypoints[14][0] != -1 and pose.keypoints[15][0] != -1:
+                    new_point = [int((pose.keypoints[14][0] + pose.keypoints[15][0]) / 2), int((pose.keypoints[14][1] + pose.keypoints[15][1]) / 2)]
+                    target_points.append(new_point)
+                if pose.keypoints[16][0] != -1:
+                    target_points.append(pose.keypoints[1])
             cv2.rectangle(img, (pose.bbox[0], pose.bbox[1]),
                           (pose.bbox[0] + pose.bbox[2], pose.bbox[1] + pose.bbox[3]), (0, 255, 0))
             if track:
@@ -113,7 +118,9 @@ class Brain:
                 # print('id: {}, Confidence: {:.2f}'.format(pose.id, pose.confidence))
             
         cv2.namedWindow('AEye', cv2.WINDOW_NORMAL)
-        cv2.resizeWindow('AEye', 960, 540)
+        # cv2.resizeWindow('AEye', 960, 540)
+        cv2.resizeWindow('AEye', 720, 640)
+
         cv2.imshow('AEye', img)
         key = cv2.waitKey(delay)
         

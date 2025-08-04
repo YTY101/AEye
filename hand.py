@@ -45,13 +45,14 @@ class Hand:
     def __init__(self):
         self.x = -1
         self.y = -1
-        # self.listener = Listener(on_click=self.on_click)
-        self.listener = KeyboardListener(on_press=self.on_press_fps)
+        self.listener = Listener(on_click=self.on_click_fps)
+        # self.listener = KeyboardListener(on_press=self.on_press_fps)
         self.mouse = Controller()
         self.port = 'COM8'
         self.baudrate = 115200
         self.ser = serial.Serial(self.port, self.baudrate)
-        self.pid = PIDController(0.4, 0, 0)
+        self.pid = PIDController(0.5, 0, 0)
+        self.executing = False
     
     def work(self):
         self.listener.start()
@@ -89,22 +90,73 @@ class Hand:
             # pydirectinput.moveTo(self.x, self.y)
             print(f"Trigger: Moving mouse to ({self.x}, {self.y})")
 
+    # def on_click(self, x, y, button, pressed):
+    #     if button == Button.middle and pressed:
+    #         # dx, dy = 30, -30
+       
+    #         if self.x != -1 and self.y != -1:
+    #             dx, dy = self.x - x, self.y - y
+    #             # dx, dy = self.x - 1920 / 2, self.y - 1080 / 2
+    #             print(f"Trigger: Moving mouse from ({x}, {y}) to ({self.x}, {self.y})")
+    #             command = f"{dx},{dy}\n"
+    #             self.ser.write(command.encode())
+    #         else:
+    #             print(f"Trigger: No target detected")
+    
+    
     def on_click(self, x, y, button, pressed):
         if button == Button.middle and pressed:
-            # dx, dy = 30, -30
-       
-            if self.x != -1 and self.y != -1:
-                dx, dy = self.x - x, self.y - y
-                # dx, dy = self.x - 1920 / 2, self.y - 1080 / 2
-                print(f"Trigger: Moving mouse from ({x}, {y}) to ({self.x}, {self.y})")
-                command = f"{dx},{dy}\n"
-                self.ser.write(command.encode())
+            target_x, target_y = (self.x, self.y)
+            if (self.x != -1 and self.y != -1):
+                current_x, current_y = self.get_mouse_position()
+                print(f"Trigger: Moving mouse from ({current_x}, {current_y}) to ({target_x}, {target_y})")
+                
+                while(abs(target_x - current_x) > 10 or abs(target_y - current_y) > 10):
+                    target_x, target_y = (self.x, self.y)
+                    dx, dy = self.pid.compute((current_x, current_y), (target_x, target_y))
+                    self.send_command(dx, dy)
+                    current_x, current_y = self.get_mouse_position()
+                    print(f"PID Track: {current_x}, {current_y}")
+                    time.sleep(0.01)  # 给 MCU
             else:
                 print(f"Trigger: No target detected")
     
+    def on_click_fps(self, x, y, button, pressed):
+        if button == Button.middle and not pressed and not self.executing:
+            self.executing = True
+            current_x, current_y = 1920 / 2, 1080 / 2
+            if (self.x != -1 and self.y != -1):
+                target_x, target_y = (self.x, self.y)
+                dx, dy = target_x - current_x, target_y - current_y
+                for step_dx, step_dy in self.split_movement(dx, dy):
+                    self.send_command(step_dx, step_dy)
+                    time.sleep(0.0007)  # 给 MCU
+                self.send_command("x", "x")
+                print(f"Trigger: Moving mouse from ({current_x}, {current_y}) to ({target_x}, {target_y})")
+                
+            else:
+                self.send_command("x", "x")
+                print(f"Trigger: No target detected")
+            self.executing = False
+
     def on_press(self, key):
+        if key == KeyCode.from_char('f'):
+            current_x, current_y = self.get_mouse_position()
+            if (self.x != -1 and self.y != -1):
+                target_x, target_y = (self.x, self.y)
+                print(f"Trigger: Moving mouse from ({current_x}, {current_y}) to ({target_x}, {target_y})")
+                dx, dy = target_x - current_x, target_y - current_y
+                for step_dx, step_dy in self.split_movement(dx, dy):
+                    self.send_command(step_dx, step_dy)
+                    time.sleep(0.0001)  # 给 MCU
+                self.send_command("x", "x")
+            else:
+                print(f"Trigger: No target detected")
+                
+    
+    def on_press_pid(self, key):
         # x, y = self.get_mouse_position()
-        if key == KeyCode.from_char('`'):
+        if key == KeyCode.from_char('f'):
             target_x, target_y = (self.x, self.y)
             if (self.x != -1 and self.y != -1):
                 current_x, current_y = self.get_mouse_position()
@@ -121,7 +173,35 @@ class Hand:
                 print(f"Trigger: No target detected")
 
     def on_press_fps(self, key):
-        if key == KeyCode.from_char('`'):
+        if key == KeyCode.from_char('f'):
+            current_x, current_y = 1920 / 2, 1080 / 2
+            if (self.x != -1 and self.y != -1):
+                target_x, target_y = (self.x, self.y)
+                print(f"Trigger: Moving mouse from ({current_x}, {current_y}) to ({target_x}, {target_y})")
+                dx, dy = target_x - current_x, target_y - current_y
+                for step_dx, step_dy in self.split_movement(dx, dy):
+                    self.send_command(step_dx, step_dy)
+                    time.sleep(0.0007)  # 给 MCU
+                self.send_command("x", "x")
+                
+            else:
+                print(f"Trigger: No target detected")
+                
+                
+            # current_x, current_y = 1920 / 2, 1080 / 2
+            # if (self.x != -1 and self.y != -1):
+            #     target_x, target_y = (self.x, self.y)
+            #     print(f"Trigger: Moving mouse from ({current_x}, {current_y}) to ({target_x}, {target_y})")
+            #     dx, dy = target_x - current_x, target_y - current_y
+            #     for step_dx, step_dy in self.split_movement(dx, dy):
+            #         self.send_command(step_dx, step_dy)
+            #         time.sleep(0.001)  # 给 MCU
+            # else:
+            #     print(f"Trigger: No target detected")
+                
+                
+    def on_press_pid_fps(self, key):
+        if key == KeyCode.from_char('f'):
             target_x, target_y = 1920 / 2, 1080 / 2
             if (self.x != -1 and self.y != -1):
                 current_x, current_y = (self.x, self.y)
@@ -129,7 +209,7 @@ class Hand:
                 
                 repeat = 0
                 last_x, last_y = -1, -1
-                while(abs(target_x - current_x) > 10 or abs(target_y - current_y) > 10):
+                while(abs(target_x - current_x) > 5 or abs(target_y - current_y) > 5):
                     dx, dy = self.pid.compute((current_x, current_y), (target_x, target_y))
                     self.send_command(-dx, -dy)
                     current_x, current_y = (self.x, self.y)
@@ -148,6 +228,7 @@ class Hand:
                     time.sleep(0.01)  # 给 MCU
             else:
                 print(f"Trigger: No target detected")
+
 
     def on_release(self, key):
         if key == Key.ctrl_l:

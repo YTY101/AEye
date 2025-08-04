@@ -10,11 +10,11 @@ class Eye:
 
         self.window_title = window_title
         if (window_title == "auto"): 
-            # 设置全屏
-            self.left = 0
-            self.top = 0
-            self.width = 1920
-            self.height = 1080
+            # # 设置全屏
+            # self.left = 0
+            # self.top = 0
+            # self.width = 1920
+            # self.height = 1080
             
             # # 480x640
             # self.left = 0
@@ -39,6 +39,36 @@ class Eye:
             # self.top = 28
             # self.width = 1024
             # self.height = 1024
+            
+            # # 720x720
+            # self.left =600
+            # self.top = 180
+            # self.width = 720
+            # self.height = 720
+            
+            # # 640x640
+            # self.left = 660
+            # self.top = 220
+            # self.width = 640
+            # self.height = 640
+            
+            # # 680x680
+            # self.left = 620
+            # self.top = 200
+            # self.width = 680
+            # self.height = 680
+            
+            # # 720x640
+            # self.left = 600
+            # self.top = 220
+            # self.width = 720
+            # self.height = 640
+
+            # 480x480
+            self.left = 720
+            self.top = 300
+            self.width = 480
+            self.height = 480
             print(f"Recoding: Fullscreen AREA: ({self.left}, {self.top}, {self.width}, {self.height})")
         else:
             self.window = gw.getWindowsWithTitle(self.window_title)
@@ -65,13 +95,18 @@ class Eye:
 
                     # 显示预览（可选）
                     cv2.namedWindow("Screen", cv2.WINDOW_NORMAL)
-                    cv2.resizeWindow("Screen", 960, 540)
+                    # cv2.resizeWindow("Screen", 960, 540)
+                    # cv2.resizeWindow("Screen", 640, 640)
+                    # cv2.resizeWindow("Screen", 720, 640)
+                    cv2.resizeWindow("Screen", 480, 480)
+                    
 
                     cv2.imshow("Screen", frame)
                     if cv2.waitKey(1) == 27:  # ESC 键退出预览
                         break
                     
-                    frame = cv2.resize(frame, (720, 405))
+                    # frame = cv2.resize(frame, (720, 405))
+                    # frame = cv2.resize(frame, (720, 720))
                     yield frame
 
             except KeyboardInterrupt:
