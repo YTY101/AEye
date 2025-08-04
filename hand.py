@@ -51,7 +51,7 @@ class Hand:
         self.port = 'COM8'
         self.baudrate = 115200
         self.ser = serial.Serial(self.port, self.baudrate)
-        self.pid = PIDController(0.3, 0, 0)
+        self.pid = PIDController(0.4, 0, 0)
     
     def work(self):
         self.listener.start()
@@ -127,11 +127,21 @@ class Hand:
                 current_x, current_y = (self.x, self.y)
                 print(f"Trigger: Moving mouse from ({current_x}, {current_y}) to ({target_x}, {target_y})")
                 
+                repeat = 0
+                last_x, last_y = -1, -1
                 while(abs(target_x - current_x) > 10 or abs(target_y - current_y) > 10):
                     dx, dy = self.pid.compute((current_x, current_y), (target_x, target_y))
                     self.send_command(-dx, -dy)
                     current_x, current_y = (self.x, self.y)
-                    print(f"PID Track: {current_x}, {current_y}")
+                    print(f"PID Track: {current_x}, {current_y} repeat: {repeat}")
+                    if current_x == last_x and current_y == last_y:
+                        repeat += 1
+                        if repeat > 10:
+                            print(f"Trigger: Target lost")
+                            break
+                    else:
+                        last_x, last_y = current_x, current_y
+                        repeat = 0
                     if current_x == -1 or current_y == -1:
                         print(f"Trigger: Target lost")
                         break
