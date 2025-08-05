@@ -99,7 +99,7 @@ class Brain:
         
         target_points = []
         for pose in current_poses:
-            if pose.confidence > 5:
+            if pose.confidence > 0.5:
                 if pose.keypoints[0][0] != -1:            
                     target_points.append(pose.keypoints[0])
                 if pose.keypoints[14][0] != -1 and pose.keypoints[15][0] != -1:
