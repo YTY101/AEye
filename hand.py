@@ -49,8 +49,8 @@ class Hand:
         self.x = -1
         self.y = -1
         self.switch_listener = KeyboardListener(on_press=self.on_press_switch)
-        # self.listener = Listener(on_click=self.on_click_fps)
-        self.listener = KeyboardListener(on_press=self.on_press_fps)
+        self.listener = Listener(on_click=self.on_click_fps)
+        # self.listener = KeyboardListener(on_press=self.on_press_fps)
         self.mouse = Controller()
         self.port = 'COM8'
         self.baudrate = 115200
@@ -157,7 +157,7 @@ class Hand:
                 dx, dy = target_x - current_x, target_y - current_y
                 for step_dx, step_dy in self.split_movement(dx, dy):
                     self.send_command(step_dx, step_dy)
-                    time.sleep(0.01)  # 给 MCU
+                    time.sleep(0.005)  # 给 MCU
                 self.send_command("x", "x")
                 print(f"Trigger: Moving mouse from ({current_x}, {current_y}) to ({target_x}, {target_y})")
                 
@@ -320,7 +320,7 @@ class Hand:
                 for step_dx, step_dy in self.split_movement(dx, dy):
                     self.send_command(step_dx, step_dy)
                     time.sleep(0.01)  # 给 MCU
-                time.sleep(0.05)  # 给 MCU
+                time.sleep(0.01)  # 给 MCU
                 
                 self.send_command("x", "x")
                 print(f"Trigger: Moving mouse from ({current_x}, {current_y}) to ({target_x}, {target_y})")
