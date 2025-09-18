@@ -10,7 +10,7 @@
 
 ## Quick Start
 ```bash
-git clone https://github.com/your-username/AEye.git
+git clone https://github.com/YTY101/AEye.git
 cd AEye
 python main.py
 # 接下来根据提示选择监控窗口即可，默认选择0号窗口监视全屏
